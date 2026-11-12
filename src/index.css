@@ -70,8 +70,12 @@ button {
   filter: saturate(.77);
 }
 
+.hero-video {
+  will-change: transform;
+}
+
 .hero-overlay {
-  background: linear-gradient(90deg,rgba(17,25,18,.88) 0%,rgba(19,28,19,.62) 43%,rgba(20,27,20,.08) 100%),linear-gradient(0deg,rgba(16,22,17,.43),transparent 28%);
+  background: linear-gradient(90deg,rgba(17,25,18,.9) 0%,rgba(19,28,19,.68) 43%,rgba(20,27,20,.16) 100%),linear-gradient(0deg,rgba(16,22,17,.48),transparent 34%);
 }
 
 .header {
@@ -158,6 +162,10 @@ button {
   left: 9%;
   top: 26%;
   max-width: 590px;
+}
+
+.hero-copy .eyebrow, .hero-copy h1, .hero-intro, .hero-bottom {
+  text-shadow: 0 2px 18px rgba(0,0,0,.42);
 }
 
 .eyebrow {
