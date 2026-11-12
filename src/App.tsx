@@ -74,6 +74,14 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
   const [outgoingSlide, setOutgoingSlide] = useState<number | null>(null)
+  const [playHeroVideo] = useState(() => {
+    if (typeof navigator === 'undefined') return true
+    const connection = (navigator as Navigator & {
+      connection?: { saveData?: boolean; effectiveType?: string }
+    }).connection
+    const slowConnection = ['slow-2g', '2g', '3g'].includes(connection?.effectiveType ?? '')
+    return !connection?.saveData && !slowConnection
+  })
   const reducedMotion = useReducedMotion()
   const heroRef = useRef<HTMLElement>(null)
   const carouselRef = useRef<HTMLElement>(null)
@@ -142,7 +150,10 @@ function App() {
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
-    const lenis = reducedMotion ? undefined : new Lenis({ duration: 1.15, smoothWheel: true })
+    const hasFinePointer = window.matchMedia('(pointer: fine)').matches
+    const lenis = reducedMotion || !hasFinePointer
+      ? undefined
+      : new Lenis({ duration: 1.15, smoothWheel: true })
     const updateLenis = (time: number) => lenis?.raf(time * 1000)
 
     if (lenis) {
@@ -159,11 +170,13 @@ function App() {
       gsap.from('.hero-copy .hero-intro, .hero-copy .button', { opacity: 0, y: 18, duration: 0.7, delay: 0.4, stagger: 0.12, ease: 'power2.out' })
       gsap.from('.hero-feature, .hero-stamp', { opacity: 0, y: 22, duration: 0.8, delay: 0.55, stagger: 0.13, ease: 'power3.out' })
 
-      gsap.to('.hero-image', {
-        yPercent: 10,
-        ease: 'none',
-        scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true },
-      })
+      if (hasFinePointer) {
+        gsap.to('.hero-image', {
+          yPercent: 10,
+          ease: 'none',
+          scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true },
+        })
+      }
 
       gsap.from('.proof-stat, .trust-card, .editorial-left, .editorial-stage .portrait-card, .editorial-right', {
         autoAlpha: 0,
@@ -311,11 +324,11 @@ function App() {
       <section ref={heroRef} className="hero" id="inicio">
         <video
           className="hero-image hero-video"
-          autoPlay={!reducedMotion}
+          autoPlay={!reducedMotion && playHeroVideo}
           muted
           loop
           playsInline
-          preload="metadata"
+          preload={!reducedMotion && playHeroVideo ? 'metadata' : 'none'}
           poster="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=2200&q=85"
           aria-hidden="true"
           tabIndex={-1}

@@ -71,7 +71,13 @@ button {
 }
 
 .hero-video {
-  will-change: transform;
+  will-change: auto;
+}
+
+@media(pointer: fine) {
+  .hero-video {
+    will-change: transform;
+  }
 }
 
 .hero-overlay {
@@ -1019,6 +1025,53 @@ button {
   }
   .footer-brand {
     font-size: 9px;
+  }
+}
+
+@media(max-width:1000px) {
+  .menu-toggle {
+    display: flex;
+    z-index: 6;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: #ede9db;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+  }
+
+  .menu-toggle span {
+    width: 14px;
+    height: 1px;
+    background: #2a2b23;
+  }
+
+  .nav {
+    position: absolute;
+    display: none;
+    top: 62px;
+    right: 0;
+    width: min(280px,88vw);
+    padding: 25px;
+    background: #f0eee5;
+    color: #23261e;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px #0003;
+    align-items: stretch;
+    gap: 22px;
+    font-size: 12px;
+  }
+
+  .nav.is-open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nav .nav-cta {
+    justify-content: space-between;
   }
 }
 
@@ -2063,5 +2116,66 @@ button {
   }
   .location-description {
     font-size: 11px;
+  }
+}
+
+@media(max-width:520px) {
+  .hero-feature {
+    bottom: 23%;
+  }
+
+  .editorial-stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    min-height: 0;
+    gap: 25px;
+    padding-top: 32px;
+    padding-bottom: 38px;
+  }
+
+  .editorial-left {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+    text-align: center;
+  }
+
+  .editorial-left span {
+    font-size: 11px;
+  }
+
+  .editorial-left strong {
+    font-size: clamp(32px,9vw,42px);
+  }
+
+  .editorial-stage .portrait-card {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: center;
+    width: min(68vw,250px);
+    height: 310px;
+    transform: none;
+  }
+
+  .editorial-right {
+    grid-column: 1;
+    grid-row: 3;
+    justify-self: center;
+    text-align: center;
+    max-width: 310px;
+  }
+
+  .editorial-right h2 span {
+    font-size: 14px;
+  }
+
+  .editorial-right h2 strong {
+    font-size: clamp(28px,8vw,36px);
+  }
+
+  .editorial-right>p {
+    max-width: 280px;
+    margin: 12px auto 0;
+    font-size: 10px;
   }
 }
