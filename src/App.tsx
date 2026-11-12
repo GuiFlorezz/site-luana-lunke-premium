@@ -73,28 +73,72 @@ function Arrow() {
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
+  const [outgoingSlide, setOutgoingSlide] = useState<number | null>(null)
   const reducedMotion = useReducedMotion()
   const heroRef = useRef<HTMLElement>(null)
   const carouselRef = useRef<HTMLElement>(null)
   const touchStartX = useRef<number | null>(null)
+  const carouselAnimating = useRef(false)
+  const carouselDirection = useRef(1)
 
   useEffect(() => {
     const section = carouselRef.current
-    if (!section || reducedMotion) return
+    if (!section || outgoingSlide === null) return
 
-    const context = gsap.context(() => {
-      gsap.fromTo('.treatment-carousel-image',
-        { autoAlpha: 0.55, scale: 1.045 },
-        { autoAlpha: 1, scale: 1, duration: 1, ease: 'power2.out' },
-      )
-      gsap.fromTo('.treatment-carousel-copy > *',
-        { autoAlpha: 0, y: 22 },
-        { autoAlpha: 1, y: 0, duration: 0.65, stagger: 0.1, ease: 'power3.out', delay: 0.12 },
-      )
-    }, section)
+    const outgoingImage = section.querySelector('.treatment-carousel-image.is-outgoing')
+    const incomingImage = section.querySelector('.treatment-carousel-image.is-current')
+    const outgoingCopy = section.querySelector('.treatment-carousel-copy.is-outgoing')
+    const incomingCopy = section.querySelector('.treatment-carousel-copy.is-current')
 
-    return () => context.revert()
-  }, [activeSlide, reducedMotion])
+    if (!outgoingImage || !incomingImage || !outgoingCopy || !incomingCopy) {
+      setOutgoingSlide(null)
+      carouselAnimating.current = false
+      return
+    }
+
+    if (reducedMotion) {
+      setOutgoingSlide(null)
+      carouselAnimating.current = false
+      return
+    }
+
+    const direction = carouselDirection.current
+    const timeline = gsap.timeline({
+      onComplete: () => {
+        setOutgoingSlide(null)
+        carouselAnimating.current = false
+      },
+    })
+
+    timeline
+      .to(outgoingImage, {
+        autoAlpha: 0,
+        x: direction * -34,
+        scale: 0.985,
+        duration: 0.72,
+        ease: 'power2.inOut',
+      }, 0)
+      .fromTo(incomingImage,
+        { autoAlpha: 0.25, x: direction * 42, scale: 1.055 },
+        { autoAlpha: 1, x: 0, scale: 1, duration: 1.05, ease: 'power3.out' },
+        0,
+      )
+      .to(outgoingCopy, {
+        autoAlpha: 0,
+        x: direction * -24,
+        duration: 0.35,
+        ease: 'power2.in',
+      }, 0)
+      .fromTo(incomingCopy.children,
+        { autoAlpha: 0, x: direction * 18, y: 12 },
+        { autoAlpha: 1, x: 0, y: 0, duration: 0.62, stagger: 0.075, ease: 'power3.out' },
+        0.2,
+      )
+
+    return () => {
+      timeline.kill()
+    }
+  }, [activeSlide, outgoingSlide, reducedMotion])
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
@@ -236,8 +280,20 @@ function App() {
   }, [reducedMotion])
 
   const closeMenu = () => setMenuOpen(false)
+  const goToSlide = (index: number, direction = index >= activeSlide ? 1 : -1) => {
+    if (carouselAnimating.current) return
+    const nextSlide = (index + carouselSlides.length) % carouselSlides.length
+    if (nextSlide === activeSlide) return
+
+    carouselAnimating.current = true
+    carouselDirection.current = direction
+    if (!reducedMotion) setOutgoingSlide(activeSlide)
+    setActiveSlide(nextSlide)
+    if (reducedMotion) carouselAnimating.current = false
+  }
+
   const changeSlide = (direction: number) => {
-    setActiveSlide((current) => (current + direction + carouselSlides.length) % carouselSlides.length)
+    goToSlide(activeSlide + direction, direction)
   }
   const reveal = reducedMotion ? {} : { initial: 'hidden' as const, whileInView: 'visible' as const, viewport: { once: true, amount: 0.18 } }
 
@@ -314,16 +370,30 @@ function App() {
           if (event.key === 'ArrowLeft') changeSlide(-1)
         }}
       >
+        {outgoingSlide !== null && (
+          <img
+            className="treatment-carousel-image is-outgoing"
+            src={carouselSlides[outgoingSlide].image}
+            alt=""
+            aria-hidden="true"
+          />
+        )}
         <img
-          key={carouselSlides[activeSlide].title}
-          className="treatment-carousel-image"
+          className="treatment-carousel-image is-current"
           src={carouselSlides[activeSlide].image}
           alt={carouselSlides[activeSlide].alt}
-          loading="lazy"
+          loading={activeSlide === 0 ? 'eager' : 'lazy'}
         />
         <div className="treatment-carousel-shade" />
         <div className="treatment-carousel-top"><span>LUANA LUNKE <i>·</i> CLÍNICA DE ESTÉTICA</span><span>POSSIBILIDADES DE CUIDADO</span></div>
-        <div className="treatment-carousel-copy" aria-live="polite" aria-atomic="true">
+        {outgoingSlide !== null && (
+          <div className="treatment-carousel-copy is-outgoing" aria-hidden="true">
+            <p className="eyebrow light"><span /> 0{outgoingSlide + 1} / 0{carouselSlides.length}</p>
+            <h2>{carouselSlides[outgoingSlide].title}</h2>
+            <p>{carouselSlides[outgoingSlide].description}</p>
+          </div>
+        )}
+        <div className="treatment-carousel-copy is-current" aria-live="polite" aria-atomic="true">
           <p className="eyebrow light"><span /> 0{activeSlide + 1} / 0{carouselSlides.length}</p>
           <h2>{carouselSlides[activeSlide].title}</h2>
           <p>{carouselSlides[activeSlide].description}</p>
@@ -339,7 +409,7 @@ function App() {
                 aria-label={`Ir para slide ${index + 1}: ${slide.title}`}
                 aria-current={activeSlide === index ? 'true' : undefined}
                 className={activeSlide === index ? 'is-active' : ''}
-                onClick={() => setActiveSlide(index)}
+                onClick={() => goToSlide(index)}
               />
             ))}
           </div>
