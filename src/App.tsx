@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { motion, useReducedMotion, type Variants } from 'framer-motion'
 import Lenis from 'lenis'
 import gsap from 'gsap'
@@ -40,6 +40,7 @@ function Arrow() {
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const reducedMotion = useReducedMotion()
+  const heroRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
@@ -119,12 +120,73 @@ function App() {
     }
   }, [reducedMotion])
 
+  useEffect(() => {
+  const hero = heroRef.current
+
+  // Só ativa em dispositivos com cursor e respeita movimento reduzido
+  if (
+    !hero ||
+    reducedMotion ||
+    !window.matchMedia('(pointer: fine)').matches
+  ) {
+    return
+  }
+
+  const image = hero.querySelector<HTMLImageElement>('.hero-image')
+  const feature = hero.querySelector<HTMLElement>('.hero-feature')
+
+  if (!image || !feature) return
+
+  const imageX = gsap.quickTo(image, 'x', {
+    duration: 0.8,
+    ease: 'power3.out',
+  })
+  const imageY = gsap.quickTo(image, 'y', {
+    duration: 0.8,
+    ease: 'power3.out',
+  })
+  const featureX = gsap.quickTo(feature, 'x', {
+    duration: 0.8,
+    ease: 'power3.out',
+  })
+  const featureY = gsap.quickTo(feature, 'y', {
+    duration: 0.8,
+    ease: 'power3.out',
+  })
+
+  const moveWithPointer = (event: PointerEvent) => {
+    const bounds = hero.getBoundingClientRect()
+    const x = (event.clientX - bounds.left) / bounds.width - 0.5
+    const y = (event.clientY - bounds.top) / bounds.height - 0.5
+
+    imageX(x * -10)
+    imageY(y * -8)
+    featureX(x * 12)
+    featureY(y * 9)
+  }
+
+  const resetPosition = () => {
+    imageX(0)
+    imageY(0)
+    featureX(0)
+    featureY(0)
+  }
+
+  hero.addEventListener('pointermove', moveWithPointer)
+  hero.addEventListener('pointerleave', resetPosition)
+
+  return () => {
+    hero.removeEventListener('pointermove', moveWithPointer)
+    hero.removeEventListener('pointerleave', resetPosition)
+  }
+  }, [reducedMotion])
+
   const closeMenu = () => setMenuOpen(false)
   const reveal = reducedMotion ? {} : { initial: 'hidden' as const, whileInView: 'visible' as const, viewport: { once: true, amount: 0.18 } }
 
   return (
     <main className="page-shell">
-      <section className="hero" id="inicio">
+      <section ref={heroRef} className="hero" id="inicio">
         <img className="hero-image" src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=2200&q=90" alt="Mulher em um momento de cuidado com a pele" fetchPriority="high" />
         <div className="hero-overlay" />
         <header className="header">
