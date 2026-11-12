@@ -309,7 +309,19 @@ function App() {
   return (
     <main className="page-shell">
       <section ref={heroRef} className="hero" id="inicio">
-        <img className="hero-image" src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=2200&q=90" alt="Mulher em um momento de cuidado com a pele" fetchPriority="high" />
+        <video
+          className="hero-image hero-video"
+          autoPlay={!reducedMotion}
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=2200&q=85"
+          aria-hidden="true"
+          tabIndex={-1}
+        >
+          <source src="/videos/secao_hero.mp4" type="video/mp4" />
+        </video>
         <div className="hero-overlay" />
         <header className="header">
           <a href="#inicio" className="brand" aria-label="Luana Lunke, início" onClick={closeMenu}>
@@ -346,7 +358,7 @@ function App() {
         <div className="editorial-stage section-pad">
           <h2 className="editorial-left"><span>CONHEÇA A</span><strong>Dra. Luana<br />Lunke</strong></h2>
           <a className="portrait-card" href="#clinica">
-            <img src="https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&fit=crop&w=900&q=85" alt="Imagem temporária para substituir pelo retrato da Dra. Luana Lunke" loading="lazy" />
+            <img src="/images/dr%20luana.png" alt="Dra. Luana Lunke" loading="lazy" />
             <div><span>UM OLHAR ATENTO</span><strong>Cuidado com<br />presença.</strong></div>
           </a>
           <div className="editorial-right"><h2><span>ESTÉTICA COM</span><strong>escuta e<br />individualidade.</strong></h2><p>Uma abordagem que começa por conhecer você e respeitar o que faz sentido para o seu momento.</p></div>
