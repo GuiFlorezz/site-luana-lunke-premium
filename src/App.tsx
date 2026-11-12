@@ -199,6 +199,15 @@ function App() {
         scrollTrigger: { trigger: '.clinic-photo', start: 'top 80%', once: true },
       })
 
+      gsap.from('.location-copy, .location-map', {
+        autoAlpha: 0,
+        y: 28,
+        duration: 0.8,
+        stagger: 0.16,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: '.location-section', start: 'top 76%', once: true },
+      })
+
       gsap.from('.contact .contact-star, .contact .eyebrow, .contact h2, .contact>p:not(.eyebrow), .contact .button', {
         autoAlpha: 0,
         y: 20,
@@ -309,7 +318,7 @@ function App() {
           </a>
           <button className="menu-toggle" type="button" aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
           <nav className={menuOpen ? 'nav is-open' : 'nav'} aria-label="Navegação principal">
-            <a href="#essencia" onClick={closeMenu}>Nossa essência</a><a href="#cuidados" onClick={closeMenu}>Cuidados</a><a href="#jornada" onClick={closeMenu}>Como funciona</a>
+            <a href="#essencia" onClick={closeMenu}>Nossa essência</a><a href="#cuidados" onClick={closeMenu}>Cuidados</a><a href="#jornada" onClick={closeMenu}>Como funciona</a><a href="#localizacao" onClick={closeMenu}>Localização</a>
             <a className="nav-cta" href="#contato" onClick={closeMenu}>Vamos conversar <Arrow /></a>
           </nav>
         </header>
@@ -431,6 +440,26 @@ function App() {
         <motion.div className="clinic-copy" {...reveal} variants={fadeUp}>
           <p className="eyebrow dark"><span /> UM CONVITE AO CUIDADO</p><h2>Mais do que<br />estética,<br /><em>presença.</em></h2><p>Um espaço pensado para receber você com tranquilidade. Aqui, cada detalhe convida a desacelerar e a olhar para si com carinho.</p><a href="#cuidados" className="text-link">Explore nossos cuidados <Arrow /></a>
         </motion.div>
+      </section>
+
+      <section className="location-section section-pad" id="localizacao">
+        <div className="location-copy">
+          <p className="eyebrow dark"><span /> ONDE ESTAMOS</p>
+          <h2>Um espaço de cuidado<br /><em>em Feliz.</em></h2>
+          <p className="location-description">Será um prazer receber você na clínica. Estamos em Feliz, no Rio Grande do Sul.</p>
+          <div className="location-place"><span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" fill="none" stroke="currentColor" strokeWidth="1.4"/><circle cx="12" cy="10" r="2.2" fill="none" stroke="currentColor" strokeWidth="1.4"/></svg></span><div><strong>Feliz</strong><small>Rio Grande do Sul · Brasil</small></div></div>
+          <a className="location-link" href="https://www.google.com/maps/search/?api=1&query=Feliz%2C%20RS%2C%20Brasil" target="_blank" rel="noreferrer">Ver no Google Maps <Arrow /></a>
+        </div>
+        <div className="location-map">
+          <iframe
+            title="Mapa de Feliz, Rio Grande do Sul"
+            src="https://maps.google.com/maps?q=Feliz%2C%20RS%2C%20Brasil&z=14&output=embed"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
+          <span className="map-caption">FELIZ · RIO GRANDE DO SUL</span>
+        </div>
       </section>
 
       <section className="contact" id="contato"><span className="contact-star">✳</span><p className="eyebrow light"><span /> SEU PRÓXIMO PASSO</p><h2>Vamos conversar<br /><em>sobre você?</em></h2><p>Conte para nós o que você busca. Será um prazer receber você.</p><a className="button button-light" href="https://wa.me/5500000000000?text=Olá,%20gostaria%20de%20agendar%20uma%20avaliação" target="_blank" rel="noreferrer">Agende sua avaliação <Arrow /></a><small>* Substitua o número do WhatsApp pelo contato da clínica.</small></section>
