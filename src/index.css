@@ -1772,7 +1772,11 @@ button {
 
 .treatment-carousel-shade {
   z-index: -1;
-  background: linear-gradient(90deg,rgba(17,25,18,.84) 0%,rgba(19,27,20,.61) 42%,rgba(20,27,20,.12) 100%),linear-gradient(0deg,rgba(14,20,15,.56),transparent 45%);
+  background:
+    linear-gradient(90deg,rgba(14,21,15,.88) 0%,rgba(16,23,16,.72) 34%,rgba(18,25,18,.4) 68%,rgba(18,25,18,.18) 100%),
+    linear-gradient(0deg,rgba(12,18,13,.7) 0%,rgba(12,18,13,.18) 38%,transparent 66%),
+    linear-gradient(180deg,rgba(12,18,13,.28) 0%,transparent 28%),
+    radial-gradient(ellipse at 69% 48%,transparent 22%,rgba(10,15,11,.34) 100%);
 }
 
 .treatment-carousel-top {
@@ -1814,6 +1818,25 @@ button {
   letter-spacing: -.075em;
   line-height: .96;
   margin: 0 0 18px;
+}
+
+.slide-title-split {
+  perspective: 700px;
+}
+
+.slide-title-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.slide-title-char {
+  display: inline-block;
+  transform-origin: center bottom;
+  backface-visibility: hidden;
+}
+
+.slide-copy-word {
+  display: inline-block;
 }
 
 .treatment-carousel-copy>p:not(.eyebrow) {
@@ -1940,7 +1963,10 @@ button {
     object-position: 59% center;
   }
   .treatment-carousel-shade {
-    background: linear-gradient(90deg,rgba(17,25,18,.72),rgba(19,27,20,.28)),linear-gradient(0deg,rgba(14,20,15,.75),rgba(14,20,15,.08) 78%);
+    background:
+      linear-gradient(90deg,rgba(12,18,13,.8) 0%,rgba(16,22,16,.56) 60%,rgba(16,22,16,.2) 100%),
+      linear-gradient(0deg,rgba(10,15,11,.78) 0%,rgba(10,15,11,.25) 48%,transparent 80%),
+      linear-gradient(180deg,rgba(10,15,11,.22) 0%,transparent 28%);
   }
   .treatment-carousel-top {
     top: 22px;
