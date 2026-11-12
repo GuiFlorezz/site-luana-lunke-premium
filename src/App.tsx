@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { Fragment, useEffect, useState, useRef } from 'react'
 import { motion, useReducedMotion, type Variants } from 'framer-motion'
 import Lenis from 'lenis'
 import gsap from 'gsap'
@@ -32,31 +32,31 @@ const carouselSlides = [
   {
     title: 'Estética facial',
     description: 'Protocolos pensados para cuidar da pele e valorizar sua beleza com naturalidade.',
-    image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=2200&q=90',
+    image: '/images/estetica_facial.jpg',
     alt: 'Momento de cuidado facial em ambiente sereno',
   },
   {
-    title: 'Tecnologias estéticas',
+    title: 'Harmonização Facil',
     description: 'Recursos escolhidos com atenção para acompanhar diferentes objetivos de cuidado.',
-    image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=2200&q=90',
+    image: '/images/tecnologia_estetica.jpg',
     alt: 'Produtos e elementos de skincare em uma composição natural',
   },
   {
-    title: 'Cuidado individual',
+    title: 'Limpeza de pele',
     description: 'Uma jornada construída a partir de uma conversa e de uma avaliação cuidadosa.',
-    image: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=2200&q=90',
+    image: '/images/Cuidado_individual.jpg',
     alt: 'Cuidado estético realizado com atenção',
   },
   {
     title: 'Rituais para sua pele',
     description: 'Um convite a cuidar de si com presença, consistência e respeito ao seu momento.',
-    image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=2200&q=90',
+    image: '/images/Rituais_pele.jpg',
     alt: 'Produtos de cuidado para a pele',
   },
   {
     title: 'Beleza no seu tempo',
     description: 'Cada escolha começa por entender você, seus desejos e o que faz sentido para sua rotina.',
-    image: 'https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&fit=crop&w=2200&q=90',
+    image: '/images/beleza.jpg',
     alt: 'Retrato em luz natural',
   },
 ]
@@ -68,6 +68,36 @@ const fadeUp: Variants = {
 
 function Arrow() {
   return <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M3.5 10h12m-5-5 5 5-5 5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.3" /></svg>
+}
+
+function AnimatedTitle({ text }: { text: string }) {
+  return (
+    <span className="slide-title-split" aria-hidden="true">
+      {text.split(' ').map((word, wordIndex) => (
+        <Fragment key={`${word}-${wordIndex}`}>
+          {wordIndex > 0 && ' '}
+          <span className="slide-title-word">
+            {Array.from(word).map((letter, letterIndex) => (
+              <span className="slide-title-char" key={`${letter}-${letterIndex}`}>{letter}</span>
+            ))}
+          </span>
+        </Fragment>
+      ))}
+    </span>
+  )
+}
+
+function AnimatedDescription({ text }: { text: string }) {
+  return (
+    <span aria-hidden="true">
+      {text.split(' ').map((word, index) => (
+        <Fragment key={`${word}-${index}`}>
+          {index > 0 && ' '}
+          <span className="slide-copy-word">{word}</span>
+        </Fragment>
+      ))}
+    </span>
+  )
 }
 
 function App() {
@@ -91,7 +121,22 @@ function App() {
 
   useEffect(() => {
     const section = carouselRef.current
-    if (!section || outgoingSlide === null) return
+    if (!section) return
+
+    if (outgoingSlide === null) {
+      if (reducedMotion) return
+      const currentImage = section.querySelector('.treatment-carousel-image.is-current')
+      if (!currentImage) return
+
+      const maxScale = window.matchMedia('(max-width: 520px)').matches ? 1.07 : 1.12
+      const zoom = gsap.fromTo(
+        currentImage,
+        { scale: 1 },
+        { scale: maxScale, duration: 24, ease: 'none' },
+      )
+
+      return () => zoom.kill()
+    }
 
     const outgoingImage = section.querySelector('.treatment-carousel-image.is-outgoing')
     const incomingImage = section.querySelector('.treatment-carousel-image.is-current')
@@ -111,6 +156,8 @@ function App() {
     }
 
     const direction = carouselDirection.current
+    const titleLetters = incomingCopy.querySelectorAll('.slide-title-char')
+    const descriptionWords = incomingCopy.querySelectorAll('.slide-copy-word')
     const timeline = gsap.timeline({
       onComplete: () => {
         setOutgoingSlide(null)
@@ -121,26 +168,31 @@ function App() {
     timeline
       .to(outgoingImage, {
         autoAlpha: 0,
-        x: direction * -34,
-        scale: 0.985,
-        duration: 0.72,
+        x: direction * -20,
+        duration: 1.08,
         ease: 'power2.inOut',
       }, 0)
       .fromTo(incomingImage,
-        { autoAlpha: 0.25, x: direction * 42, scale: 1.055 },
-        { autoAlpha: 1, x: 0, scale: 1, duration: 1.05, ease: 'power3.out' },
+        { autoAlpha: 0, x: direction * 20, scale: 1.025 },
+        { autoAlpha: 1, x: 0, scale: 1, duration: 1.35, ease: 'power3.out' },
         0,
       )
       .to(outgoingCopy, {
         autoAlpha: 0,
-        x: direction * -24,
-        duration: 0.35,
+        x: direction * -12,
+        y: -5,
+        duration: 0.38,
         ease: 'power2.in',
       }, 0)
-      .fromTo(incomingCopy.children,
-        { autoAlpha: 0, x: direction * 18, y: 12 },
-        { autoAlpha: 1, x: 0, y: 0, duration: 0.62, stagger: 0.075, ease: 'power3.out' },
-        0.2,
+      .fromTo(titleLetters,
+        { autoAlpha: 0, y: 18, rotationX: -32, transformPerspective: 700 },
+        { autoAlpha: 1, y: 0, rotationX: 0, duration: 0.58, stagger: 0.018, ease: 'power3.out' },
+        0.16,
+      )
+      .fromTo(descriptionWords,
+        { autoAlpha: 0, y: 9 },
+        { autoAlpha: 1, y: 0, duration: 0.48, stagger: 0.025, ease: 'power2.out' },
+        0.43,
       )
 
     return () => {
@@ -422,15 +474,13 @@ function App() {
         <div className="treatment-carousel-top"><span>LUANA LUNKE <i>·</i> CLÍNICA DE ESTÉTICA</span><span>POSSIBILIDADES DE CUIDADO</span></div>
         {outgoingSlide !== null && (
           <div className="treatment-carousel-copy is-outgoing" aria-hidden="true">
-            <p className="eyebrow light"><span /> 0{outgoingSlide + 1} / 0{carouselSlides.length}</p>
-            <h2>{carouselSlides[outgoingSlide].title}</h2>
-            <p>{carouselSlides[outgoingSlide].description}</p>
+            <h2 aria-label={carouselSlides[outgoingSlide].title}><AnimatedTitle text={carouselSlides[outgoingSlide].title} /></h2>
+            <p aria-label={carouselSlides[outgoingSlide].description}><AnimatedDescription text={carouselSlides[outgoingSlide].description} /></p>
           </div>
         )}
         <div className="treatment-carousel-copy is-current" aria-live="polite" aria-atomic="true">
-          <p className="eyebrow light"><span /> 0{activeSlide + 1} / 0{carouselSlides.length}</p>
-          <h2>{carouselSlides[activeSlide].title}</h2>
-          <p>{carouselSlides[activeSlide].description}</p>
+          <h2 aria-label={carouselSlides[activeSlide].title}><AnimatedTitle text={carouselSlides[activeSlide].title} /></h2>
+          <p aria-label={carouselSlides[activeSlide].description}><AnimatedDescription text={carouselSlides[activeSlide].description} /></p>
           <a href="#contato" className="button button-light">Converse com a clínica <Arrow /></a>
         </div>
         <div className="treatment-carousel-controls">
