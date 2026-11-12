@@ -28,6 +28,39 @@ const treatments = [
   },
 ]
 
+const carouselSlides = [
+  {
+    title: 'Estética facial',
+    description: 'Protocolos pensados para cuidar da pele e valorizar sua beleza com naturalidade.',
+    image: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=2200&q=90',
+    alt: 'Momento de cuidado facial em ambiente sereno',
+  },
+  {
+    title: 'Tecnologias estéticas',
+    description: 'Recursos escolhidos com atenção para acompanhar diferentes objetivos de cuidado.',
+    image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=2200&q=90',
+    alt: 'Produtos e elementos de skincare em uma composição natural',
+  },
+  {
+    title: 'Cuidado individual',
+    description: 'Uma jornada construída a partir de uma conversa e de uma avaliação cuidadosa.',
+    image: 'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=2200&q=90',
+    alt: 'Cuidado estético realizado com atenção',
+  },
+  {
+    title: 'Rituais para sua pele',
+    description: 'Um convite a cuidar de si com presença, consistência e respeito ao seu momento.',
+    image: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=2200&q=90',
+    alt: 'Produtos de cuidado para a pele',
+  },
+  {
+    title: 'Beleza no seu tempo',
+    description: 'Cada escolha começa por entender você, seus desejos e o que faz sentido para sua rotina.',
+    image: 'https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&fit=crop&w=2200&q=90',
+    alt: 'Retrato em luz natural',
+  },
+]
+
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 26 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1] } },
@@ -39,8 +72,29 @@ function Arrow() {
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [activeSlide, setActiveSlide] = useState(0)
   const reducedMotion = useReducedMotion()
   const heroRef = useRef<HTMLElement>(null)
+  const carouselRef = useRef<HTMLElement>(null)
+  const touchStartX = useRef<number | null>(null)
+
+  useEffect(() => {
+    const section = carouselRef.current
+    if (!section || reducedMotion) return
+
+    const context = gsap.context(() => {
+      gsap.fromTo('.treatment-carousel-image',
+        { autoAlpha: 0.55, scale: 1.045 },
+        { autoAlpha: 1, scale: 1, duration: 1, ease: 'power2.out' },
+      )
+      gsap.fromTo('.treatment-carousel-copy > *',
+        { autoAlpha: 0, y: 22 },
+        { autoAlpha: 1, y: 0, duration: 0.65, stagger: 0.1, ease: 'power3.out', delay: 0.12 },
+      )
+    }, section)
+
+    return () => context.revert()
+  }, [activeSlide, reducedMotion])
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
@@ -182,6 +236,9 @@ function App() {
   }, [reducedMotion])
 
   const closeMenu = () => setMenuOpen(false)
+  const changeSlide = (direction: number) => {
+    setActiveSlide((current) => (current + direction + carouselSlides.length) % carouselSlides.length)
+  }
   const reveal = reducedMotion ? {} : { initial: 'hidden' as const, whileInView: 'visible' as const, viewport: { once: true, amount: 0.18 } }
 
   return (
@@ -222,19 +279,72 @@ function App() {
           <div className="trust-card"><span className="trust-index">#01</span><div><strong>A escuta vem primeiro</strong><p>Um espaço para conversar, entender seus desejos e construir seu plano.</p></div></div>
         </div>
         <div className="editorial-stage section-pad">
-          <h2 className="editorial-left"><span>Beleza</span><strong>com<br />identidade.</strong></h2>
+          <h2 className="editorial-left"><span>CONHEÇA A</span><strong>Dra. Luana<br />Lunke</strong></h2>
           <a className="portrait-card" href="#clinica">
-            <img src="https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&fit=crop&w=900&q=85" alt="Retrato de profissional da área de estética" loading="lazy" />
-            <div><span>DRA. LUANA LUNKE</span><strong>Cuidado com<br />presença.</strong></div>
+            <img src="https://images.unsplash.com/photo-1552693673-1bf958298935?auto=format&fit=crop&w=900&q=85" alt="Imagem temporária para substituir pelo retrato da Dra. Luana Lunke" loading="lazy" />
+            <div><span>UM OLHAR ATENTO</span><strong>Cuidado com<br />presença.</strong></div>
           </a>
-          <h2 className="editorial-right"><span>Resultados</span><strong>que respeitam<br />quem você é.</strong></h2>
+          <div className="editorial-right"><h2><span>ESTÉTICA COM</span><strong>escuta e<br />individualidade.</strong></h2><p>Uma abordagem que começa por conhecer você e respeitar o que faz sentido para o seu momento.</p></div>
         </div>
-        <div className="editorial-controls"><a href="#clinica" aria-label="Conheça a clínica">←</a><span><i /><i className="active" /><i /></span><a className="control-dark" href="#cuidados" aria-label="Conheça os cuidados">→</a></div>
       </section>
 
       <section className="care-section section-pad" id="cuidados">
         <motion.div className="care-heading" {...reveal} variants={fadeUp}><div><p className="eyebrow dark"><span /> CUIDADO PENSADO PARA VOCÊ</p><h2>Um caminho<br /><em>feito em conjunto.</em></h2></div><p className="body-copy">Conheça algumas das possibilidades de cuidado. A indicação ideal é sempre construída depois de uma avaliação individual.</p></motion.div>
         <div className="treatment-grid">{treatments.map((item) => <article className="treatment-card" key={item.number}><div className="treatment-image"><img src={item.image} alt={item.alt} loading="lazy" /><span>{item.number}</span></div><div className="treatment-copy"><div><h3>{item.title}</h3><p>{item.description}</p></div><a href="#contato" aria-label={`Saiba mais sobre ${item.title}`}><Arrow /></a></div></article>)}</div>
+      </section>
+
+      <section
+        ref={carouselRef}
+        className="treatment-carousel"
+        id="experiencias"
+        aria-label="Conheça as possibilidades de cuidado"
+        tabIndex={0}
+        onTouchStart={(event) => {
+          touchStartX.current = event.touches[0]?.clientX ?? null
+        }}
+        onTouchEnd={(event) => {
+          const endX = event.changedTouches[0]?.clientX
+          if (touchStartX.current === null || endX === undefined) return
+          const distance = endX - touchStartX.current
+          if (Math.abs(distance) > 45) changeSlide(distance > 0 ? -1 : 1)
+          touchStartX.current = null
+        }}
+        onKeyDown={(event) => {
+          if (event.key === 'ArrowRight') changeSlide(1)
+          if (event.key === 'ArrowLeft') changeSlide(-1)
+        }}
+      >
+        <img
+          key={carouselSlides[activeSlide].title}
+          className="treatment-carousel-image"
+          src={carouselSlides[activeSlide].image}
+          alt={carouselSlides[activeSlide].alt}
+          loading="lazy"
+        />
+        <div className="treatment-carousel-shade" />
+        <div className="treatment-carousel-top"><span>LUANA LUNKE <i>·</i> CLÍNICA DE ESTÉTICA</span><span>POSSIBILIDADES DE CUIDADO</span></div>
+        <div className="treatment-carousel-copy" aria-live="polite" aria-atomic="true">
+          <p className="eyebrow light"><span /> 0{activeSlide + 1} / 0{carouselSlides.length}</p>
+          <h2>{carouselSlides[activeSlide].title}</h2>
+          <p>{carouselSlides[activeSlide].description}</p>
+          <a href="#contato" className="button button-light">Converse com a clínica <Arrow /></a>
+        </div>
+        <div className="treatment-carousel-controls">
+          <button type="button" onClick={() => changeSlide(-1)} aria-label="Slide anterior"><Arrow /></button>
+          <div className="treatment-carousel-dots" aria-label="Escolha um slide">
+            {carouselSlides.map((slide, index) => (
+              <button
+                key={slide.title}
+                type="button"
+                aria-label={`Ir para slide ${index + 1}: ${slide.title}`}
+                aria-current={activeSlide === index ? 'true' : undefined}
+                className={activeSlide === index ? 'is-active' : ''}
+                onClick={() => setActiveSlide(index)}
+              />
+            ))}
+          </div>
+          <button type="button" onClick={() => changeSlide(1)} aria-label="Próximo slide"><Arrow /></button>
+        </div>
       </section>
 
       <section className="journey-section section-pad" id="jornada">
