@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Questionnaire } from './Questionnaire'
 import { WhatsAppPreviewDialog } from './WhatsAppPreviewDialog'
+import { EquipmentInfoDialog } from './EquipmentInfoDialog'
 
 const treatments = [
   {
@@ -106,6 +107,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [questionnaireOpen, setQuestionnaireOpen] = useState(false)
   const [messagePreviewOpen, setMessagePreviewOpen] = useState(false)
+  const [equipmentDialogOpen, setEquipmentDialogOpen] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
   const [outgoingSlide, setOutgoingSlide] = useState<number | null>(null)
   const [playHeroVideo] = useState(() => {
@@ -300,7 +302,7 @@ function App() {
   }, [reducedMotion])
 
   useEffect(() => {
-    const anyDialogOpen = questionnaireOpen || messagePreviewOpen
+    const anyDialogOpen = questionnaireOpen || messagePreviewOpen || equipmentDialogOpen
     if (!anyDialogOpen) return
 
     const previousBodyOverflow = document.body.style.overflow
@@ -315,7 +317,7 @@ function App() {
       document.documentElement.style.overflow = previousDocumentOverflow
       lenisRef.current?.start()
     }
-  }, [questionnaireOpen, messagePreviewOpen])
+  }, [questionnaireOpen, messagePreviewOpen, equipmentDialogOpen])
 
   useEffect(() => {
   const hero = heroRef.current
@@ -421,7 +423,7 @@ function App() {
           <button className="menu-toggle" type="button" aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
           <nav className={menuOpen ? 'nav is-open' : 'nav'} aria-label="Navegação principal">
             <a href="#essencia" onClick={closeMenu}>Nossa essência</a><a href="#cuidados" onClick={closeMenu}>Cuidados</a><a href="#jornada" onClick={closeMenu}>Como funciona</a><a href="#localizacao" onClick={closeMenu}>Localização</a>
-            <a className="nav-cta" href="#contato" onClick={closeMenu}>Vamos conversar <Arrow /></a>
+            <a className="nav-cta" href={`https://wa.me/?text=${encodeURIComponent('Olá, Dra. Luana! Gostaria de conversar sobre os cuidados da clínica.')}`} target="_blank" rel="noreferrer" onClick={closeMenu}>Vamos conversar <Arrow /></a>
           </nav>
         </header>
 
@@ -435,11 +437,13 @@ function App() {
           </div>
         </motion.div>
 
-        <a className="hero-feature" href="#cuidados">
-          <img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=300&q=85" alt="" />
-          <span><small>UM OLHAR SÓ SEU</small><strong>Beleza com<br />naturalidade</strong><b>Descubra os cuidados <Arrow /></b></span>
-        </a>
-        <div className="hero-stamp"><strong>LL</strong><p>Seu cuidado<br />começa por você.</p><div className="avatar-dots"><i>✳</i><i>LL</i><i>+</i></div></div>
+        <div className="hero-cards">
+          <button className="hero-feature" type="button" onClick={() => setEquipmentDialogOpen(true)} aria-haspopup="dialog">
+            <img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=300&q=85" alt="" />
+            <span><small>UM OLHAR SÓ SEU</small><strong>Beleza com<br />naturalidade</strong><b>Descubra os cuidados <Arrow /></b></span>
+          </button>
+          <div className="hero-stamp"><strong>LL</strong><p>Seu cuidado<br />começa por você.</p><div className="avatar-dots"><i>✳</i><i>LL</i><i>+</i></div></div>
+        </div>
         <div className="hero-bottom"><span>ESTÉTICA · BEM-ESTAR · INDIVIDUALIDADE</span><a href="#essencia">ROLE PARA DESCOBRIR <b>↓</b></a></div>
       </section>
 
@@ -583,6 +587,7 @@ function App() {
         topic={carouselSlides[activeSlide].title}
         onClose={() => setMessagePreviewOpen(false)}
       />
+      <EquipmentInfoDialog open={equipmentDialogOpen} onClose={() => setEquipmentDialogOpen(false)} />
     </main>
   )
 }
