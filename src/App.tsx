@@ -3,6 +3,8 @@ import { motion, useReducedMotion, type Variants } from 'framer-motion'
 import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { Questionnaire } from './Questionnaire'
+import { WhatsAppPreviewDialog } from './WhatsAppPreviewDialog'
 
 const treatments = [
   {
@@ -102,6 +104,8 @@ function AnimatedDescription({ text }: { text: string }) {
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [questionnaireOpen, setQuestionnaireOpen] = useState(false)
+  const [messagePreviewOpen, setMessagePreviewOpen] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
   const [outgoingSlide, setOutgoingSlide] = useState<number | null>(null)
   const [playHeroVideo] = useState(() => {
@@ -115,6 +119,7 @@ function App() {
   const reducedMotion = useReducedMotion()
   const heroRef = useRef<HTMLElement>(null)
   const carouselRef = useRef<HTMLElement>(null)
+  const lenisRef = useRef<Lenis | null>(null)
   const touchStartX = useRef<number | null>(null)
   const carouselAnimating = useRef(false)
   const carouselDirection = useRef(1)
@@ -206,6 +211,7 @@ function App() {
     const lenis = reducedMotion || !hasFinePointer
       ? undefined
       : new Lenis({ duration: 1.15, smoothWheel: true })
+    lenisRef.current = lenis ?? null
     const updateLenis = (time: number) => lenis?.raf(time * 1000)
 
     if (lenis) {
@@ -289,8 +295,27 @@ function App() {
         gsap.ticker.remove(updateLenis)
         lenis.destroy()
       }
+      lenisRef.current = null
     }
   }, [reducedMotion])
+
+  useEffect(() => {
+    const anyDialogOpen = questionnaireOpen || messagePreviewOpen
+    if (!anyDialogOpen) return
+
+    const previousBodyOverflow = document.body.style.overflow
+    const previousDocumentOverflow = document.documentElement.style.overflow
+
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+    lenisRef.current?.stop()
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow
+      document.documentElement.style.overflow = previousDocumentOverflow
+      lenisRef.current?.start()
+    }
+  }, [questionnaireOpen, messagePreviewOpen])
 
   useEffect(() => {
   const hero = heroRef.current
@@ -404,7 +429,10 @@ function App() {
           <p className="eyebrow light"><span /> ESTÉTICA COM INTENÇÃO</p>
           <h1>BELEZA<br /><em>NO SEU TEMPO.</em></h1>
           <p className="hero-intro">Cuidado atento, tecnologia e naturalidade para revelar a beleza que já é sua.</p>
-          <a className="button button-light" href="#essencia">Conheça nosso olhar <Arrow /></a>
+          <div className="hero-actions">
+            <a className="button button-light" href="#essencia">Conheça nosso olhar <Arrow /></a>
+            <button className="button button-outline" type="button" onClick={() => setQuestionnaireOpen(true)}>Encontre seu cuidado <Arrow /></button>
+          </div>
         </motion.div>
 
         <a className="hero-feature" href="#cuidados">
@@ -433,6 +461,10 @@ function App() {
       <section className="care-section section-pad" id="cuidados">
         <motion.div className="care-heading" {...reveal} variants={fadeUp}><div><p className="eyebrow dark"><span /> CUIDADO PENSADO PARA VOCÊ</p><h2>Um caminho<br /><em>feito em conjunto.</em></h2></div><p className="body-copy">Conheça algumas das possibilidades de cuidado. A indicação ideal é sempre construída depois de uma avaliação individual.</p></motion.div>
         <div className="treatment-grid">{treatments.map((item) => <article className="treatment-card" key={item.number}><div className="treatment-image"><img src={item.image} alt={item.alt} loading="lazy" /><span>{item.number}</span></div><div className="treatment-copy"><div><h3>{item.title}</h3><p>{item.description}</p></div><a href="#contato" aria-label={`Saiba mais sobre ${item.title}`}><Arrow /></a></div></article>)}</div>
+        <div className="care-quiz-cta">
+          <div><small>EM DÚVIDA POR ONDE COMEÇAR?</small><strong>Descubra um assunto para conversar com a Dra. Luana.</strong></div>
+          <button className="button button-dark" type="button" onClick={() => setQuestionnaireOpen(true)}>Responder questionário <Arrow /></button>
+        </div>
       </section>
 
       <section
@@ -481,7 +513,7 @@ function App() {
         <div className="treatment-carousel-copy is-current" aria-live="polite" aria-atomic="true">
           <h2 aria-label={carouselSlides[activeSlide].title}><AnimatedTitle text={carouselSlides[activeSlide].title} /></h2>
           <p aria-label={carouselSlides[activeSlide].description}><AnimatedDescription text={carouselSlides[activeSlide].description} /></p>
-          <a href="#contato" className="button button-light">Converse com a clínica <Arrow /></a>
+          <button className="button button-light" type="button" onClick={() => setMessagePreviewOpen(true)}>Converse com a clínica <Arrow /></button>
         </div>
         <div className="treatment-carousel-controls">
           <button type="button" onClick={() => changeSlide(-1)} aria-label="Slide anterior"><Arrow /></button>
@@ -537,9 +569,20 @@ function App() {
         </div>
       </section>
 
-      <section className="contact" id="contato"><span className="contact-star">✳</span><p className="eyebrow light"><span /> SEU PRÓXIMO PASSO</p><h2>Vamos conversar<br /><em>sobre você?</em></h2><p>Conte para nós o que você busca. Será um prazer receber você.</p><a className="button button-light" href="https://wa.me/5500000000000?text=Olá,%20gostaria%20de%20agendar%20uma%20avaliação" target="_blank" rel="noreferrer">Agende sua avaliação <Arrow /></a><small>* Substitua o número do WhatsApp pelo contato da clínica.</small></section>
+      <section className="contact" id="contato"><span className="contact-star">✳
+        </span>
+          <p className="eyebrow light"><span /> SEU PRÓXIMO PASSO</p><h2>Vamos conversar<br />
+          <em>sobre você?</em></h2><p>Conte para nós o que você busca. Será um prazer receber você.</p>
+          <a className="button button-light" href="https://wa.me/5500000000000?text=Olá,%20gostaria%20de%20agendar%20uma%20avaliação" target="_blank" rel="noreferrer">Agende sua avaliação <Arrow /></a>
+      </section>
 
       <footer className="footer"><a href="#inicio" className="footer-brand">LUANA LUNKE</a><span>CLÍNICA DE ESTÉTICA · CUIDADO COM INTENÇÃO</span><a href="#inicio">VOLTAR AO TOPO ↑</a></footer>
+      <Questionnaire open={questionnaireOpen} onClose={() => setQuestionnaireOpen(false)} />
+      <WhatsAppPreviewDialog
+        open={messagePreviewOpen}
+        topic={carouselSlides[activeSlide].title}
+        onClose={() => setMessagePreviewOpen(false)}
+      />
     </main>
   )
 }
