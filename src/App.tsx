@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState, useRef } from 'react'
-import { motion, useReducedMotion, type Variants } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion'
 import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -104,6 +104,7 @@ function AnimatedDescription({ text }: { text: string }) {
 }
 
 function App() {
+  const [introLoading, setIntroLoading] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
   const [questionnaireOpen, setQuestionnaireOpen] = useState(false)
   const [messagePreviewOpen, setMessagePreviewOpen] = useState(false)
@@ -125,6 +126,11 @@ function App() {
   const touchStartX = useRef<number | null>(null)
   const carouselAnimating = useRef(false)
   const carouselDirection = useRef(1)
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setIntroLoading(false), reducedMotion ? 350 : 1450)
+    return () => window.clearTimeout(timeout)
+  }, [reducedMotion])
 
   useEffect(() => {
     const section = carouselRef.current
@@ -399,7 +405,31 @@ function App() {
   const reveal = reducedMotion ? {} : { initial: 'hidden' as const, whileInView: 'visible' as const, viewport: { once: true, amount: 0.18 } }
 
   return (
-    <main className="page-shell">
+    <>
+      <AnimatePresence>
+        {introLoading && (
+          <motion.div
+            className="site-loader"
+            role="status"
+            aria-live="polite"
+            aria-label="Carregando o site da Dra. Luana Lunke"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, y: -10, transition: { duration: reducedMotion ? 0.15 : 0.65, ease: [0.76, 0, 0.24, 1] } }}
+          >
+            <div className="site-loader-frame" />
+            <motion.div className="site-loader-brand" initial={reducedMotion ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: 'easeOut' }}>
+              <span className="site-loader-mark">LL</span>
+              <span><strong>LUANA LUNKE</strong><small>CLÍNICA DE ESTÉTICA</small></span>
+            </motion.div>
+            <div className="site-loader-center">
+              <motion.span className="site-loader-flower" aria-hidden="true" initial={reducedMotion ? false : { opacity: 0, scale: 0.7, rotate: -25 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ duration: 0.8, delay: 0.12, ease: 'easeOut' }}>✳</motion.span>
+              <motion.p initial={reducedMotion ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.2 }}>Cuidado com intenção.</motion.p>
+            </div>
+            <div className="site-loader-bottom"><span>FELIZ · RIO GRANDE DO SUL</span><div className="site-loader-track"><motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: reducedMotion ? 0.25 : 1.25, ease: [0.65, 0, 0.35, 1] }} /></div><span>EST. LL</span></div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <main className="page-shell">
       <section ref={heroRef} className="hero" id="inicio">
         <video
           className="hero-image hero-video"
@@ -418,7 +448,7 @@ function App() {
         <header className="header">
           <a href="#inicio" className="brand" aria-label="Luana Lunke, início" onClick={closeMenu}>
             <span className="brand-symbol">LL</span>
-            <span><strong>LUANA LUNKE</strong><small>CLÍNICA DE ESTÉTICA</small></span>
+            <span><strong>DRA LUANA LUNKE</strong></span>
           </a>
           <button className="menu-toggle" type="button" aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
           <nav className={menuOpen ? 'nav is-open' : 'nav'} aria-label="Navegação principal">
@@ -458,7 +488,7 @@ function App() {
             <img src="/images/dr%20luana.png" alt="Dra. Luana Lunke" loading="lazy" />
             <div><span>UM OLHAR ATENTO</span><strong>Cuidado com<br />presença.</strong></div>
           </a>
-          <div className="editorial-right"><h2><span>ESTÉTICA COM</span><strong>escuta e<br />individualidade.</strong></h2><p>Uma abordagem que começa por conhecer você e respeitar o que faz sentido para o seu momento.</p></div>
+          <div className="editorial-right"><h2><span>ESTÉTICA COM</span><strong>escuta e<br />individualidade.</strong></h2><p></p></div>
         </div>
       </section>
 
@@ -580,7 +610,7 @@ function App() {
           <a className="button button-light" href="https://wa.me/5500000000000?text=Olá,%20gostaria%20de%20agendar%20uma%20avaliação" target="_blank" rel="noreferrer">Agende sua avaliação <Arrow /></a>
       </section>
 
-      <footer className="footer"><a href="#inicio" className="footer-brand">LUANA LUNKE</a><span>CLÍNICA DE ESTÉTICA · CUIDADO COM INTENÇÃO</span><a href="#inicio">VOLTAR AO TOPO ↑</a></footer>
+      <footer className="footer"><a href="#inicio" className="footer-brand">LUANA LUNKE</a><span>CLÍNICA DE ESTÉTICA · CUIDADO COM INTENÇÃO</span><small className="footer-copyright">© {new Date().getFullYear()} Clínica Luana Lunke. Todos os direitos reservados.</small><a href="#inicio">VOLTAR AO TOPO ↑</a></footer>
       <Questionnaire open={questionnaireOpen} onClose={() => setQuestionnaireOpen(false)} />
       <WhatsAppPreviewDialog
         open={messagePreviewOpen}
@@ -588,7 +618,8 @@ function App() {
         onClose={() => setMessagePreviewOpen(false)}
       />
       <EquipmentInfoDialog open={equipmentDialogOpen} onClose={() => setEquipmentDialogOpen(false)} />
-    </main>
+      </main>
+    </>
   )
 }
 
