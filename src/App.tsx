@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Questionnaire } from './Questionnaire'
 import { WhatsAppPreviewDialog } from './WhatsAppPreviewDialog'
 import { EquipmentInfoDialog } from './EquipmentInfoDialog'
+import { BeforeAfterSection } from './BeforeAfterSection'
 
 const treatments = [
   {
@@ -271,6 +272,15 @@ function App() {
         scrollTrigger: { trigger: '.journey-section', start: 'top 75%', once: true },
       })
 
+      gsap.from('.before-after-heading, .before-after-card', {
+        autoAlpha: 0,
+        y: 28,
+        duration: 0.75,
+        stagger: 0.12,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: '.before-after-section', start: 'top 75%', once: true },
+      })
+
       gsap.from('.clinic-photo img', {
         scale: 1.08,
         duration: 1.2,
@@ -452,7 +462,7 @@ function App() {
           </a>
           <button className="menu-toggle" type="button" aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button>
           <nav className={menuOpen ? 'nav is-open' : 'nav'} aria-label="Navegação principal">
-            <a href="#essencia" onClick={closeMenu}>Nossa essência</a><a href="#cuidados" onClick={closeMenu}>Cuidados</a><a href="#jornada" onClick={closeMenu}>Como funciona</a><a href="#localizacao" onClick={closeMenu}>Localização</a>
+            <a href="#essencia" onClick={closeMenu}>Nossa essência</a><a href="#cuidados" onClick={closeMenu}>Cuidados</a><a href="#resultados" onClick={closeMenu}>Resultados</a><a href="#jornada" onClick={closeMenu}>Como funciona</a><a href="#localizacao" onClick={closeMenu}>Localização</a>
             <a className="nav-cta" href={`https://wa.me/?text=${encodeURIComponent('Olá, Dra. Luana! Gostaria de conversar sobre os cuidados da clínica.')}`} target="_blank" rel="noreferrer" onClick={closeMenu}>Vamos conversar <Arrow /></a>
           </nav>
         </header>
@@ -566,6 +576,8 @@ function App() {
           <button type="button" onClick={() => changeSlide(1)} aria-label="Próximo slide"><Arrow /></button>
         </div>
       </section>
+
+      <BeforeAfterSection />
 
       <section className="journey-section section-pad" id="jornada">
         <div className="journey-heading"><p className="eyebrow dark"><span /> COMO FUNCIONA</p><h2>Um cuidado que começa<br /><em>por ouvir você.</em></h2><p>Sem pressa e sem fórmulas prontas. Cada etapa é construída junto com você.</p></div>
