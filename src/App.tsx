@@ -1,12 +1,20 @@
-import { Fragment, useEffect, useState, useRef } from 'react'
+import { lazy, Suspense, useEffect, useState, useRef } from 'react'
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion'
 import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { Questionnaire } from './Questionnaire'
-import { WhatsAppPreviewDialog } from './WhatsAppPreviewDialog'
-import { EquipmentInfoDialog } from './EquipmentInfoDialog'
 import { BeforeAfterSection } from './BeforeAfterSection'
+
+const Questionnaire = lazy(() => import('./Questionnaire').then((module) => ({ default: module.Questionnaire })))
+const WhatsAppPreviewDialog = lazy(() => import('./WhatsAppPreviewDialog').then((module) => ({ default: module.WhatsAppPreviewDialog })))
+const EquipmentInfoDialog = lazy(() => import('./EquipmentInfoDialog').then((module) => ({ default: module.EquipmentInfoDialog })))
+
+function isLowPowerDevice() {
+  if (typeof navigator === 'undefined') return false
+  const device = navigator as Navigator & { deviceMemory?: number }
+  return (device.hardwareConcurrency > 0 && device.hardwareConcurrency <= 4)
+    || (device.deviceMemory !== undefined && device.deviceMemory <= 8)
+}
 
 const treatments = [
   {
@@ -74,36 +82,6 @@ function Arrow() {
   return <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M3.5 10h12m-5-5 5 5-5 5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.3" /></svg>
 }
 
-function AnimatedTitle({ text }: { text: string }) {
-  return (
-    <span className="slide-title-split" aria-hidden="true">
-      {text.split(' ').map((word, wordIndex) => (
-        <Fragment key={`${word}-${wordIndex}`}>
-          {wordIndex > 0 && ' '}
-          <span className="slide-title-word">
-            {Array.from(word).map((letter, letterIndex) => (
-              <span className="slide-title-char" key={`${letter}-${letterIndex}`}>{letter}</span>
-            ))}
-          </span>
-        </Fragment>
-      ))}
-    </span>
-  )
-}
-
-function AnimatedDescription({ text }: { text: string }) {
-  return (
-    <span aria-hidden="true">
-      {text.split(' ').map((word, index) => (
-        <Fragment key={`${word}-${index}`}>
-          {index > 0 && ' '}
-          <span className="slide-copy-word">{word}</span>
-        </Fragment>
-      ))}
-    </span>
-  )
-}
-
 function App() {
   const [introLoading, setIntroLoading] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -121,6 +99,7 @@ function App() {
     return !connection?.saveData && !slowConnection
   })
   const reducedMotion = useReducedMotion()
+  const lowPowerDevice = isLowPowerDevice()
   const heroRef = useRef<HTMLElement>(null)
   const carouselRef = useRef<HTMLElement>(null)
   const lenisRef = useRef<Lenis | null>(null)
@@ -170,8 +149,6 @@ function App() {
     }
 
     const direction = carouselDirection.current
-    const titleLetters = incomingCopy.querySelectorAll('.slide-title-char')
-    const descriptionWords = incomingCopy.querySelectorAll('.slide-copy-word')
     const timeline = gsap.timeline({
       onComplete: () => {
         setOutgoingSlide(null)
@@ -182,31 +159,25 @@ function App() {
     timeline
       .to(outgoingImage, {
         autoAlpha: 0,
-        x: direction * -20,
-        duration: 1.08,
+        x: direction * -12,
+        duration: 0.72,
         ease: 'power2.inOut',
       }, 0)
       .fromTo(incomingImage,
-        { autoAlpha: 0, x: direction * 20, scale: 1.025 },
-        { autoAlpha: 1, x: 0, scale: 1, duration: 1.35, ease: 'power3.out' },
+        { autoAlpha: 0, x: direction * 12, scale: 1.015 },
+        { autoAlpha: 1, x: 0, scale: 1, duration: 0.82, ease: 'power2.out' },
         0,
       )
       .to(outgoingCopy, {
         autoAlpha: 0,
-        x: direction * -12,
-        y: -5,
-        duration: 0.38,
-        ease: 'power2.in',
+        x: direction * -8,
+        duration: 0.25,
+        ease: 'power1.out',
       }, 0)
-      .fromTo(titleLetters,
-        { autoAlpha: 0, y: 18, rotationX: -32, transformPerspective: 700 },
-        { autoAlpha: 1, y: 0, rotationX: 0, duration: 0.58, stagger: 0.018, ease: 'power3.out' },
-        0.16,
-      )
-      .fromTo(descriptionWords,
-        { autoAlpha: 0, y: 9 },
-        { autoAlpha: 1, y: 0, duration: 0.48, stagger: 0.025, ease: 'power2.out' },
-        0.43,
+      .fromTo(incomingCopy,
+        { autoAlpha: 0, x: direction * 10, y: 8 },
+        { autoAlpha: 1, x: 0, y: 0, duration: 0.48, ease: 'power2.out' },
+        0.08,
       )
 
     return () => {
@@ -217,7 +188,7 @@ function App() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
     const hasFinePointer = window.matchMedia('(pointer: fine)').matches
-    const lenis = reducedMotion || !hasFinePointer
+    const lenis = reducedMotion || lowPowerDevice || !hasFinePointer
       ? undefined
       : new Lenis({ duration: 1.15, smoothWheel: true })
     lenisRef.current = lenis ?? null
@@ -230,7 +201,7 @@ function App() {
     }
 
     const context = gsap.context(() => {
-      if (reducedMotion) return
+      if (reducedMotion || lowPowerDevice) return
 
       gsap.from('.hero-copy .eyebrow', { opacity: 0, y: 16, duration: 0.7, delay: 0.12, ease: 'power2.out' })
       gsap.from('.hero-copy h1', { opacity: 0, y: 34, duration: 0.95, delay: 0.2, ease: 'power3.out' })
@@ -281,6 +252,19 @@ function App() {
         scrollTrigger: { trigger: '.before-after-section', start: 'top 75%', once: true },
       })
 
+      const beforeAfterScale = window.matchMedia('(max-width: 520px)').matches ? 1.07 : 1.12
+      gsap.fromTo(
+        '.before-after-image img',
+        { scale: 1 },
+        {
+          scale: beforeAfterScale,
+          duration: 24,
+          ease: 'none',
+          stagger: 0.12,
+          scrollTrigger: { trigger: '.before-after-section', start: 'top 75%', once: true },
+        },
+      )
+
       gsap.from('.clinic-photo img', {
         scale: 1.08,
         duration: 1.2,
@@ -315,7 +299,7 @@ function App() {
       }
       lenisRef.current = null
     }
-  }, [reducedMotion])
+  }, [lowPowerDevice, reducedMotion])
 
   useEffect(() => {
     const anyDialogOpen = questionnaireOpen || messagePreviewOpen || equipmentDialogOpen
@@ -342,6 +326,7 @@ function App() {
   if (
     !hero ||
     reducedMotion ||
+    lowPowerDevice ||
     !window.matchMedia('(pointer: fine)').matches
   ) {
     return
@@ -394,7 +379,7 @@ function App() {
     hero.removeEventListener('pointermove', moveWithPointer)
     hero.removeEventListener('pointerleave', resetPosition)
   }
-  }, [reducedMotion])
+  }, [lowPowerDevice, reducedMotion])
 
   const closeMenu = () => setMenuOpen(false)
   const goToSlide = (index: number, direction = index >= activeSlide ? 1 : -1) => {
@@ -538,6 +523,7 @@ function App() {
             src={carouselSlides[outgoingSlide].image}
             alt=""
             aria-hidden="true"
+            decoding="async"
           />
         )}
         <img
@@ -545,18 +531,19 @@ function App() {
           src={carouselSlides[activeSlide].image}
           alt={carouselSlides[activeSlide].alt}
           loading={activeSlide === 0 ? 'eager' : 'lazy'}
+          decoding="async"
         />
         <div className="treatment-carousel-shade" />
         <div className="treatment-carousel-top"><span>LUANA LUNKE <i>·</i> CLÍNICA DE ESTÉTICA</span><span>POSSIBILIDADES DE CUIDADO</span></div>
         {outgoingSlide !== null && (
           <div className="treatment-carousel-copy is-outgoing" aria-hidden="true">
-            <h2 aria-label={carouselSlides[outgoingSlide].title}><AnimatedTitle text={carouselSlides[outgoingSlide].title} /></h2>
-            <p aria-label={carouselSlides[outgoingSlide].description}><AnimatedDescription text={carouselSlides[outgoingSlide].description} /></p>
+            <h2>{carouselSlides[outgoingSlide].title}</h2>
+            <p>{carouselSlides[outgoingSlide].description}</p>
           </div>
         )}
         <div className="treatment-carousel-copy is-current" aria-live="polite" aria-atomic="true">
-          <h2 aria-label={carouselSlides[activeSlide].title}><AnimatedTitle text={carouselSlides[activeSlide].title} /></h2>
-          <p aria-label={carouselSlides[activeSlide].description}><AnimatedDescription text={carouselSlides[activeSlide].description} /></p>
+          <h2>{carouselSlides[activeSlide].title}</h2>
+          <p>{carouselSlides[activeSlide].description}</p>
           <button className="button button-light" type="button" onClick={() => setMessagePreviewOpen(true)}>Converse com a clínica <Arrow /></button>
         </div>
         <div className="treatment-carousel-controls">
@@ -623,13 +610,17 @@ function App() {
       </section>
 
       <footer className="footer"><a href="#inicio" className="footer-brand">LUANA LUNKE</a><span>CLÍNICA DE ESTÉTICA · CUIDADO COM INTENÇÃO</span><small className="footer-copyright">© {new Date().getFullYear()} Clínica Luana Lunke. Todos os direitos reservados.</small><a href="#inicio">VOLTAR AO TOPO ↑</a></footer>
-      <Questionnaire open={questionnaireOpen} onClose={() => setQuestionnaireOpen(false)} />
-      <WhatsAppPreviewDialog
-        open={messagePreviewOpen}
-        topic={carouselSlides[activeSlide].title}
-        onClose={() => setMessagePreviewOpen(false)}
-      />
-      <EquipmentInfoDialog open={equipmentDialogOpen} onClose={() => setEquipmentDialogOpen(false)} />
+      <Suspense fallback={null}>
+        {questionnaireOpen && <Questionnaire open onClose={() => setQuestionnaireOpen(false)} />}
+        {messagePreviewOpen && (
+          <WhatsAppPreviewDialog
+            open
+            topic={carouselSlides[activeSlide].title}
+            onClose={() => setMessagePreviewOpen(false)}
+          />
+        )}
+        {equipmentDialogOpen && <EquipmentInfoDialog open onClose={() => setEquipmentDialogOpen(false)} />}
+      </Suspense>
       </main>
     </>
   )

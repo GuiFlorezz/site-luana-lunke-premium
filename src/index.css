@@ -1790,7 +1790,14 @@ button {
   z-index: -2;
   object-fit: cover;
   object-position: center 45%;
-  filter: saturate(.78);
+  backface-visibility: hidden;
+}
+
+.treatment-carousel-image.is-current,
+.treatment-carousel-image.is-outgoing,
+.treatment-carousel-copy.is-current,
+.treatment-carousel-copy.is-outgoing {
+  will-change: transform, opacity;
 }
 
 .treatment-carousel-image.is-outgoing, .treatment-carousel-copy.is-outgoing {
@@ -1845,25 +1852,6 @@ button {
   letter-spacing: -.075em;
   line-height: .96;
   margin: 0 0 18px;
-}
-
-.slide-title-split {
-  perspective: 700px;
-}
-
-.slide-title-word {
-  display: inline-block;
-  white-space: nowrap;
-}
-
-.slide-title-char {
-  display: inline-block;
-  transform-origin: center bottom;
-  backface-visibility: hidden;
-}
-
-.slide-copy-word {
-  display: inline-block;
 }
 
 .treatment-carousel-copy>p:not(.eyebrow) {
